@@ -28,10 +28,9 @@ for (first, last, vorp) in lines:
 
     full = "%s %s" % (first, last)
     if full in vorps:
-        if float(vorp) > vorps[full]:
-            vorps[full] = float(vorp)
+        vorps[full].append(float(vorp))
     else:
-        vorps[full] = float(vorp)
+        vorps[full] = [float(vorp)]
 
 groups = []
 for name in counts:
@@ -41,9 +40,15 @@ for name in counts:
             fulls += ["%s %s" % (first, name) for first in firsts[name]]
         if name in lasts:
             fulls += ["%s %s" % (name, last) for last in lasts[name]]
-        fulls = sorted(fulls, key=lambda x: -vorps[x])[0:5]
-        vorp = sum([vorps[full] for full in fulls])
-        groups.append((vorp, fulls))
+        fulls[0] = (fulls[0], 0)
+        for i in range(1,len(fulls)):
+            if fulls[i] == fulls[i-1][0]:
+                fulls[i] = (fulls[i], fulls[i-1][1]+1)
+            else:
+                fulls[i] = (fulls[i], 0)
+        fulls = sorted(fulls, key=lambda x: -vorps[x[0]][x[1]])[0:5]
+        vorp = sum([vorps[full[0]][full[1]] for full in fulls])
+        groups.append((vorp, [full[0] for full in fulls]))
 
 def sorter(var):
     return (-var[0], var[1])
